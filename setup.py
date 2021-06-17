@@ -49,6 +49,7 @@ paper_url = "https://papermc.io/api/v1/paper/1.16.5/latest/download" # Uses old 
 airplane_url = "https://dl.airplane.gg/latest/Airplane-JDK11/launcher-airplane.jar"
 
 print("hapeshiva server setup", version, "\n")
+print("Co-authored by LethalEthan")
 print("Warning for 1.17 java 16 will be required! get it at: https://adoptopenjdk.net/?variant=openjdk16&jvmVariant=hotspot\n")
 print("Thanks to YouHaveTrouble for the optimisation guide we used https://github.com/YouHaveTrouble/minecraft-optimization")
 # Initial user input
@@ -531,7 +532,7 @@ def End():
         except ValueError:
             print("Please enter yes or no")
         else:
-            if rm.casefold().startswith("y"):
+            if rm.casefold().startswith("n"):
                 print("\nRemoving original yml files and removing the jar outside of server")
                 try:
                     if exists("bukkit.yml"):
@@ -549,7 +550,7 @@ def End():
                 else:
                     print("\nCleaned up!")
                     break
-            elif rm.casefold().startswith("n"):
+            elif rm.casefold().startswith("y"):
                 print("Keeping temp files")
                 break
             else:
