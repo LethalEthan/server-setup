@@ -23,14 +23,10 @@ try:
     import requests
     import shutil
     import sys
+    import yaml
 except Exception as e:
     print("Could not import one or more libraries, run the corresponding setup file to install dependencies!: ", e)
     exit()
-try:
-    import yaml
-except Exception as e:
-    print("Could not import yaml: ", e)
-    noyaml = True
 
 # Detect python version, only runs on 3+
 if (sys.version_info > (3, 0)):
@@ -38,7 +34,9 @@ if (sys.version_info > (3, 0)):
 else:
     exit("Python 2 has been detected please run in Python3!")
 # Set basic vars
-version = "3.0.4"
+major = 3
+minor = 1
+patch = 0
 server_jar = "undefined.jar"
 server_path = "server/"
 SetupMode = "undefined"
@@ -55,10 +53,41 @@ velocity_url = "https://versions.velocitypowered.com/download/latest"
 waterfall_url = ""
 bungeecord_url = "https://ci.md-5.net/job/BungeeCord/lastSuccessfulBuild/artifact/bootstrap/target/BungeeCord.jar"
 
-print("hapeshiva server setup", version, "\n")
+print("hapeshiva server setup", str(major)+"."+str(minor)+"."+str(patch), "\n")
 print("Co-authored by LethalEthan")
 print("Warning for 1.17 java 16 will be required! get it at: https://adoptopenjdk.net/?variant=openjdk16&jvmVariant=hotspot\n")
 print("Thanks to YouHaveTrouble for the optimisation guide we used https://github.com/YouHaveTrouble/minecraft-optimization\n")
+
+def UpdateCheck():
+    if exists("versioninfo.yml"):
+        os.remove("versioninfo.yml")
+    Download("https://lethalethan.github.io/server-setup/versioninfo.yml", "versioninfo.yml", "yml")
+    if exists("versioninfo.yml"):
+        try:
+            versioninfo = open("versioninfo.yml", 'r')
+        except Exception as e:
+            print("Error opening version info")
+            exit()
+        else:
+            try:
+                yamyam = yaml.safe_load(versioninfo)
+            except yaml.YAMLError as e:
+                print("Could not check version info! ", e)
+            else:
+                try:
+                    new_major = yamyam['major']
+                    new_minor = yamyam['minor']
+                    new_patch = yamyam['patch']
+                except Exception as e:
+                    print("Could not find versioninfo values!: ", e)
+                else:
+                    if new_major > major or new_minor > minor or new_patch > patch:
+                        print("\nNEW VERSION AVAILABLE ON GITHUB: https://github.com/LethalEthan/server-setup\n")
+                    elif new_major == major and new_minor == minor and new_patch == patch:
+                        print("\nYOU ARE ON THE LATEST VERSION!\n")
+                    else:
+                        print("Bruh, the version is unknown")
+
 # Initial user input
 def InitialUserInput():
     global memory
@@ -193,23 +222,27 @@ def SetupMode():
             2. Server for proxy (This mode sets up a server with configs to allow proxy support)
             3. Proxy (This allows multiple servers to be connected to)
             """)
-            SetupMode = int(input("Enter which mode you would like: "))
+            SetupSelect = int(input("Enter which mode you would like: "))
         except ValueError:
             print("Please enter a valid number")
         else:
-            if SetupMode == 1:
-                mode = "server"
+            if SetupSelect == 1:
+                SetupMode = "server"
                 ServerVersionSelect()
+                ForkSelect()
                 break
-            elif SetupMode == 2:
-                mode = "serverproxy"
+            elif SetupSelect == 2:
+                SetupMode = "serverproxy"
                 ServerVersionSelect()
+                ForkSelect()
                 ProxySelect()
                 break
-            elif SetupMode == 3:
-                mode = "proxy"
+            elif SetupSelect == 3:
+                SetupMode = "proxy"
                 ProxySelect()
                 break
+            else:
+                print("Please enter a valid number")
 
 def ServerVersionSelect():
     global tuinity_url
@@ -260,22 +293,23 @@ def ProxySelect():
             if proxy == 1:
                 proxy = "velocity"
                 proxy_jar = "Velocity.jar"
-                Download(velocity_url, proxy_jar)
+                Download(velocity_url, proxy_jar, "Jar")
                 break
             elif proxy == 2:
                 proxy = "waterfall"
                 proxy_jar = "Waterfall.jar"
-                Download(waterfall_url, proxy_jar)
+                Download(waterfall_url, proxy_jar, "Jar")
                 break
             elif proxy == 3:
                 proxy = "bungeecord"
                 proxy_jar = "Bungeecord.jar"
-                Download(bungeecord_url, proxy_jar)
+                Download(bungeecord_url, proxy_jar, "Jar")
                 break
 
 def ForkSelect():
     # Fork Select
     global server_jar
+    global SetupMode
     if SetupMode == "server" or SetupMode == "serverproxy":
         while True:
             try:
@@ -294,65 +328,68 @@ def ForkSelect():
                 if fork_select == 1:
                     print("You've chosen Tuinity, How do you say it and what does it mean?")
                     server_jar = "tuinity-paperclip.jar"
-                    Download(tuinity_url, server_jar)
+                    Download(tuinity_url, server_jar, "Jar")
                     break
                 elif fork_select == 2:
                     print("You've chosen Paper, it's not called paperspigot")
                     server_jar = "paperclip-1.16.5.jar"
-                    Download(paper_url, server_jar)
+                    Download(paper_url, server_jar, "Jar")
                     break
                 elif fork_select == 3:
                     print("You've chosen Airplane, zoom")
                     server_jar = "launcher-airplane-jdk11.jar"
-                    Download(airplane_url, server_jar)
+                    Download(airplane_url, server_jar, "Jar")
                     break
                 elif fork_select == 4:
                     print("You've chosen Purpur, flying squids?")
                     server_jar = "purpurclip-1.16.5.jar"
-                    Download(purpur_url, server_jar)
+                    Download(purpur_url, server_jar, "Jar")
                     break
                 else:
                     print("Enter a valid number from the list!")
+    else:
+        print("\nSkipping fork select\n")
 
-def Download(url, filename):
+def Download(url, filename, type):
     response = requests.get(url)
     if response.ok:
         print("Download completed!")
         try:
             open(filename, "wb").write(response.content)
         except Exception as e:
-            print("Could not save Jar: ", e)
+            print("Could not save " + type +" : ", e)
         else:
-            print("Saved Jar successfully!")
-        if exists(server_path + filename):
-            while True:
-                try:
-                    rm = str(input("Would you like to replace the existing Jar in server directory? (y, n) "))
-                except ValueError:
-                    print("Please enter yes or no")
-                else:
-                    if rm.casefold().startswith("y"):
-                        try:
-                            os.remove(server_path + filename)
-                            shutil.move(filename, server_path)
-                        except Exception as e:
-                            print("Could not replace Jar: ", e)
+            print("Saved " + type + " successfully!\n")
+        if type == "Jar":
+            if exists(server_path + filename):
+                while True:
+                    try:
+                        rm = str(input("Would you like to replace the existing" + type + "in server directory? (y, n) "))
+                    except ValueError:
+                        print("Please enter yes or no")
+                    else:
+                        if rm.casefold().startswith("y"):
+                            try:
+                                os.remove(server_path + filename)
+                                shutil.move(filename, server_path)
+                            except Exception as e:
+                                print("Could not replace" + type + ": ", e)
+                                break
+                            else:
+                                print("Replace " + type + "!")
+                        elif rm.casefold().startswith("n"):
                             break
                         else:
-                            print("Replace Jar!")
-                    elif rm.casefold().startswith("n"):
-                        break
-                    else:
-                        print("Please Enter yes or no")
-        else:
-            try:
-                shutil.move(filename, server_path)
-            except Exception as e:
-                print("Could not move server Jar: ", e)
+                            print("Please Enter yes or no")
             else:
-                print("Moved Jar into server directory")
+                try:
+                    shutil.move(filename, server_path)
+                except Exception as e:
+                    print("Could not move server" + type +": ", e)
+                else:
+                    print("Moved " + type + " into server directory\n")
     else:
-        print("Something went wrong trying to download Jar!, if you selected 1.17 the jar may not be availablee yet")
+        print("Something went wrong trying to download " + type + "!, if you selected 1.17 the jar may not be availablee yet\n")
         exit()
 
 #Create Start scripts
@@ -420,7 +457,7 @@ def CreateStartScripts():
     if SetupMode == "proxy" or SetupMode == "serverproxy":
         try:
             proxysh.write(pre_arg + post_arg)
-            proxsh.close()
+            proxysh.close()
             proxybat.write(pre_arg + post_arg)
             proxybat.close()
         except Exception as e:
@@ -636,9 +673,10 @@ def End():
         while True:
             pass
 
+UpdateCheck()
 InitialUserInput()
 SetupMode()
-ForkSelect()
+#ForkSelect()
 #VersionSelect()
 CreateStartScripts()
 SetViewDistanceAndPort()
