@@ -431,7 +431,7 @@ def CreateStartScripts():
     else:
         print("Removed existing start scripts")
     pre_arg = "java -Xms" + mem + "G -Xmx" + mem + "G"
-    post_arg = " -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true -jar " + server_jar
+    post_arg = " -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true -jar "
     try:
         sh = open("start.sh", "w")
         bat = open("start.bat", "w")
@@ -445,9 +445,9 @@ def CreateStartScripts():
     # Create Server scripts
     if SetupMode == "server" or SetupMode == "serverproxy":
         try:
-            sh.write(pre_arg + post_arg + " nogui")
+            sh.write(pre_arg + post_arg + server_jar + " nogui")
             sh.close()
-            bat.write(pre_arg + post_arg + " nogui")
+            bat.write(pre_arg + post_arg + server_jar + " nogui")
             bat.close()
         except Exception as e:
             print("Could not write server start scripts!: ", e)
@@ -456,9 +456,9 @@ def CreateStartScripts():
     # Create Proxy scripts
     if SetupMode == "proxy" or SetupMode == "serverproxy":
         try:
-            proxysh.write(pre_arg + post_arg)
+            proxysh.write(pre_arg + post_arg + proxy_jar)
             proxysh.close()
-            proxybat.write(pre_arg + post_arg)
+            proxybat.write(pre_arg + post_arg + proxy_jar)
             proxybat.close()
         except Exception as e:
             print("Could not write proxy start scripts!: ", e)
