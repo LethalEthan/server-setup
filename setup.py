@@ -38,20 +38,27 @@ if (sys.version_info > (3, 0)):
 else:
     exit("Python 2 has been detected please run in Python3!")
 # Set basic vars
-version = "3.0.3"
+version = "3.0.4"
 server_jar = "undefined.jar"
 server_path = "server/"
+SetupMode = "undefined"
 maxmem = float(psutil.virtual_memory().total / 1000000000) # Used for maxmem check, don't want users using more memory than they can handle on their system
+proxy = "undefined"
+proxy_jar = "undefined"
 # Forks and knives
 tuinity_url = "https://ci.codemc.io/job/Spottedleaf/job/Tuinity/lastSuccessfulBuild/artifact/tuinity-paperclip.jar"
-purpur_url = "https://purpur.pl3x.net/api/v1/purpur/1.16.5/latest/download"
 paper_url = "https://papermc.io/api/v1/paper/1.16.5/latest/download" # Uses old API version since v2 rquires a bit more faffing which I'll get around to
 airplane_url = "https://dl.airplane.gg/latest/Airplane-JDK11/launcher-airplane.jar"
+purpur_url = "https://purpur.pl3x.net/api/v1/purpur/1.16.5/latest/download"
+#Proxies
+velocity_url = "https://versions.velocitypowered.com/download/latest"
+waterfall_url = ""
+bungeecord_url = "https://ci.md-5.net/job/BungeeCord/lastSuccessfulBuild/artifact/bootstrap/target/BungeeCord.jar"
 
 print("hapeshiva server setup", version, "\n")
 print("Co-authored by LethalEthan")
 print("Warning for 1.17 java 16 will be required! get it at: https://adoptopenjdk.net/?variant=openjdk16&jvmVariant=hotspot\n")
-print("Thanks to YouHaveTrouble for the optimisation guide we used https://github.com/YouHaveTrouble/minecraft-optimization")
+print("Thanks to YouHaveTrouble for the optimisation guide we used https://github.com/YouHaveTrouble/minecraft-optimization\n")
 # Initial user input
 def InitialUserInput():
     global memory
@@ -176,97 +183,148 @@ def ServerPathValidate():
         else:
             print("Directory created")
 
-def ForkSelect():
-    # Fork Select
-    global server_jar
+def SetupMode():
+    global SetupMode
     while True:
         try:
             print("""
-            Select which fork you want, if you're unsure choose 1
-
-            1. Tuinity
-            2. Paper
-            3. Airplane
-            4. Purpur
+            Select which setup mode you want:
+            1. Server (This sets up a standalone server)
+            2. Server for proxy (This mode sets up a server with configs to allow proxy support)
+            3. Proxy (This allows multiple servers to be connected to)
             """)
-            fork_select = int(input("Enter the number for the fork you would like: "))
+            SetupMode = int(input("Enter which mode you would like: "))
         except ValueError:
-            print("Enter a number from the list!")
+            print("Please enter a valid number")
         else:
-            if fork_select > 0 and fork_select < 5:
+            if SetupMode == 1:
+                mode = "server"
+                ServerVersionSelect()
+                break
+            elif SetupMode == 2:
+                mode = "serverproxy"
+                ServerVersionSelect()
+                ProxySelect()
+                break
+            elif SetupMode == 3:
+                mode = "proxy"
+                ProxySelect()
+                break
+
+def ServerVersionSelect():
+    global tuinity_url
+    global paper_url
+    global airplane_url
+    global purpur_url
+    while True:
+        try:
+            print("""
+            Select which version of minecraft you want:
+
+            1. 1.17 (Latest)
+            2. 1.16.5
+            """)
+            version = int(input("Enter which version you would like "))
+        except ValueError:
+            print("Please enter a valid number")
+        else:
+            if version == 1:
+                tuinity_url = "https://ci.codemc.io/job/Spottedleaf/job/Tuinity/lastSuccessfulBuild/artifact/tuinity-paperclip.jar"
+                paper_url = "https://papermc.io/api/v1/paper/1.17/latest/download" #Fix me later, https://papermc.io/api/v2/projects/paper/versions/1.17 - grab list then find biggest num
+                airplane_url = "https://dl.airplane.gg/latest/Airplane-JDK11/launcher-airplane.jar"
+                purpur_url = "https://purpur.pl3x.net/api/v1/purpur/1.17/latest/download"
+                break
+            elif version == 2:
+                tuinity_url = "https://ci.codemc.io/job/Spottedleaf/job/Tuinity/239/artifact/tuinity-paperclip.jar"
+                paper_url = "https://papermc.io/api/v2/projects/paper/versions/1.16.5/builds/778/downloads/paper-1.16.5-778.jar"
+                airplane_url = "https://dl.airplane.gg/f74d161b288cd0f3d372c8bf8454952a5f14bb37/68574788/launcher-airplane.jar"
+                purpur_url = "https://purpur.pl3x.net/api/v1/purpur/1.16.5/latest/download"
+                break
+
+def ProxySelect():
+    global proxy
+    global proxy_jar
+    while True:
+        try:
+            print("""
+            Select which proxy you would like:
+
+            1. Velocity (Reccomended)
+            2. Waterfall
+            3. Bungeecord
+            """)
+            proxy = int(input("Enter the number for which proxy you would like "))
+        except ValueError:
+            print("Please enter a valid number")
+        else:
+            if proxy == 1:
+                proxy = "velocity"
+                proxy_jar = "Velocity.jar"
+                Download(velocity_url, proxy_jar)
+                break
+            elif proxy == 2:
+                proxy = "waterfall"
+                proxy_jar = "Waterfall.jar"
+                Download(waterfall_url, proxy_jar)
+                break
+            elif proxy == 3:
+                proxy = "bungeecord"
+                proxy_jar = "Bungeecord.jar"
+                Download(bungeecord_url, proxy_jar)
+                break
+
+def ForkSelect():
+    # Fork Select
+    global server_jar
+    if SetupMode == "server" or SetupMode == "serverproxy":
+        while True:
+            try:
+                print("""
+                Select which fork you want, if you're unsure choose 1
+
+                1. Tuinity
+                2. Paper
+                3. Airplane
+                4. Purpur
+                """)
+                fork_select = int(input("Enter the number for the fork you would like: "))
+            except ValueError:
+                print("Enter a valid number from the list!")
+            else:
                 if fork_select == 1:
                     print("You've chosen Tuinity, How do you say it and what does it mean?")
                     server_jar = "tuinity-paperclip.jar"
-                    Download(tuinity_url)
+                    Download(tuinity_url, server_jar)
                     break
-                if fork_select == 2:
+                elif fork_select == 2:
                     print("You've chosen Paper, it's not called paperspigot")
                     server_jar = "paperclip-1.16.5.jar"
-                    Download(paper_url)
+                    Download(paper_url, server_jar)
                     break
-                if fork_select == 3:
+                elif fork_select == 3:
                     print("You've chosen Airplane, zoom")
                     server_jar = "launcher-airplane-jdk11.jar"
-                    Download(airplane_url)
+                    Download(airplane_url, server_jar)
                     break
-                if fork_select == 4:
+                elif fork_select == 4:
                     print("You've chosen Purpur, flying squids?")
                     server_jar = "purpurclip-1.16.5.jar"
-                    Download(purpur_url)
+                    Download(purpur_url, server_jar)
                     break
-            else:
-                print("Enter a number from the list!")
-
-#Download Jar /
-def Download(fork):
-    # If server_jar is undefined exit, Something ain't right
-    if server_jar == "undefined.jar":
-        print("Something went wrong")
-        time.sleep(8)
-        exit()
-    # Check if server_jar exists already
-    if exists(server_jar):
-        while True:
-            try:
-                rm = str(input("Server jar already downloaded, do you want to re-download (y) or use the current jar (n)? (y, n) "))
-            except ValueError:
-                print("Please enter yes or no")
-            else:
-                if rm.casefold().startswith("y"):
-                    try:
-                        os.remove(server_jar)
-                        if exists(server_path + server_jar):
-                            os.remove(server_path + server_jar)
-                    except Exception as e:
-                        print("Could not remove existing Jar!: ", e)
-                        return
-                    else:
-                        print("Removed old Jar")
-                        break
-                elif rm.casefold().startswith("n"):
-                    try:
-                        print("moving current Jar to server directory")
-                        os.remove(server_path + server_jar)
-                        shutil.move(server_jar, server_path)
-                    except Exception as e:
-                        print("Could not move Jar: ", e)
-                        return
-                    else:
-                        print("Moved Jar to server directory")
-                        return
                 else:
-                    print("Please enter yes or no")
-    print("Downloading Jar...")
-    response = requests.get(fork)
+                    print("Enter a valid number from the list!")
+
+def Download(url, filename):
+    response = requests.get(url)
     if response.ok:
         print("Download completed!")
         try:
-            open(server_jar, "wb").write(response.content)
+            open(filename, "wb").write(response.content)
         except Exception as e:
             print("Could not save Jar: ", e)
         else:
             print("Saved Jar successfully!")
-        if exists(server_path + server_jar):
+        if exists(server_path + filename):
             while True:
                 try:
                     rm = str(input("Would you like to replace the existing Jar in server directory? (y, n) "))
@@ -275,8 +333,8 @@ def Download(fork):
                 else:
                     if rm.casefold().startswith("y"):
                         try:
-                            os.remove(server_path + server_jar)
-                            shutil.move(server_jar, server_path)
+                            os.remove(server_path + filename)
+                            shutil.move(filename, server_path)
                         except Exception as e:
                             print("Could not replace Jar: ", e)
                             break
@@ -288,13 +346,13 @@ def Download(fork):
                         print("Please Enter yes or no")
         else:
             try:
-                shutil.move(server_jar, server_path)
+                shutil.move(filename, server_path)
             except Exception as e:
                 print("Could not move server Jar: ", e)
             else:
-                print("Moved server Jar into server directory")
+                print("Moved Jar into server directory")
     else:
-        print("Something went wrong trying to download Jar!")
+        print("Something went wrong trying to download Jar!, if you selected 1.17 the jar may not be availablee yet")
         exit()
 
 #Create Start scripts
@@ -306,17 +364,21 @@ def CreateStartScripts():
             memory = 4
             break
         except ValueError:
-            print("Please enter a number")
+            print("Please enter a valid number")
         else:
             if memory > 0 and memory <= maxmem - 2:
                 print("\nMemory value is within range of max available memory, continuing")
                 break
             else:
                 print("\nThe memory value you defined is higher than the available system memory detected! This will cause a crash!")
-                override = str(input("f you believe this is an error you can override this message, do you want to override? (y, n) "))
-                if override.casefold().startswith("y"):
-                    print("Overrided")
-                    break
+                try:
+                    override = str(input("If you believe this is an error you can override this message, do you want to override? (y, n) "))
+                except ValueError:
+                    print("Please enter yes or no")
+                else:
+                    if override.casefold().startswith("y"):
+                        print("Overrided")
+                        break
     mem = str(memory)
     try:
         if exists("start.sh"):
@@ -332,41 +394,53 @@ def CreateStartScripts():
     else:
         print("Removed existing start scripts")
     pre_arg = "java -Xms" + mem + "G -Xmx" + mem + "G"
-    post_arg = " -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true -jar " + server_jar + " nogui"
+    post_arg = " -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true -jar " + server_jar
     try:
         sh = open("start.sh", "w")
         bat = open("start.bat", "w")
+        proxysh = open("proxy.sh", "w" )
+        proxybat = open("proxy.bat", "w")
     except Exception as e:
         print("Could not open start scripts: ", e)
         return
     else:
         print("Created start scripts, writing...")
-    # Create Shell script
-    try:
-        sh.write(pre_arg + post_arg)
-        sh.close()
-    except Exception as e:
-        print("Could not write start.sh: ", e)
-    else:
-        print("Written start.sh")
-    # Create Batch script
-    try:
-        bat.write(pre_arg + post_arg)
-        bat.close()
-    except Exception as e:
-        print("Could not write start.bat: ", e)
-    else:
-        print("Written start.bat")
-    # Move Shell script
-    try:
-        shutil.move("start.sh", server_path)
-    except Exception as e:
-        print("Could not move start.sh to server_path: ", e)
-    # Move Batch script
-    try:
-        shutil.move("start.bat", server_path)
-    except Exception as e:
-        print("Could not move start.bat to server_path: ", e)
+    # Create Server scripts
+    if SetupMode == "server" or SetupMode == "serverproxy":
+        try:
+            sh.write(pre_arg + post_arg + " nogui")
+            sh.close()
+            bat.write(pre_arg + post_arg + " nogui")
+            bat.close()
+        except Exception as e:
+            print("Could not write server start scripts!: ", e)
+        else:
+            print("Written server start scripts")
+    # Create Proxy scripts
+    if SetupMode == "proxy" or SetupMode == "serverproxy":
+        try:
+            proxysh.write(pre_arg + post_arg)
+            proxsh.close()
+            proxybat.write(pre_arg + post_arg)
+            proxybat.close()
+        except Exception as e:
+            print("Could not write proxy start scripts!: ", e)
+        else:
+            print("Written proxy start scripts")
+    # Move server scripts
+    if SetupMode == "server" or SetupMode == "serverproxy":
+        try:
+            shutil.move("start.sh", server_path)
+            shutil.move("start.bat", server_path)
+        except Exception as e:
+            print("Could not move server start scripts to server_path: ", e)
+    # Move proxy script
+    if SetupMode == "proxy" or SetupMode == "serverproxy":
+        try:
+            shutil.move("proxy.sh", server_path)
+            shutil.move("proxy.bat", server_path)
+        except Exception as e:
+            print("Could not move proxy start scripts to server_path: ", e)
 
 # View distance And Server Port
 def SetViewDistanceAndPort():
@@ -403,7 +477,7 @@ def SetViewDistanceAndPort():
                 view_distance = int(input("\nInput your view_distance in chunks excluding no-tick (reccomended: 4): "))
             # Incorrect input e.g.nfi437y
             except ValueError:
-                print("Please enter a number")
+                print("Please enter a valid number")
             # On correct input with validation
             else:
                 if view_distance <= 32 and view_distance >= 3:
@@ -528,7 +602,7 @@ def End():
     print("Setup is complete")
     while True:
         try:
-            rm = str(input("Would you like to keep the temporary files that are outside the server directory? (y, n)"))
+            rm = str(input("Would you like to keep the temporary files that are outside the server directory? (y, n) "))
         except ValueError:
             print("Please enter yes or no")
         else:
@@ -563,7 +637,9 @@ def End():
             pass
 
 InitialUserInput()
+SetupMode()
 ForkSelect()
+#VersionSelect()
 CreateStartScripts()
 SetViewDistanceAndPort()
 #SpigotConfig()
