@@ -24,6 +24,7 @@ try:
     import shutil
     import sys
     import yaml
+    import subprocess
 except Exception as e:
     print("Could not import one or more libraries, run the corresponding setup file to install dependencies!: ", e)
     exit()
@@ -36,7 +37,7 @@ else:
 # Set basic vars
 major = 3
 minor = 1
-patch = 0
+patch = 1
 server_jar = "undefined.jar"
 server_path = "server/"
 SetupMode = "undefined"
@@ -87,6 +88,29 @@ def UpdateCheck():
                         print("\nYOU ARE ON THE LATEST VERSION!\n")
                     else:
                         print("Bruh, the version is unknown")
+
+def JavaCheck():
+    try:
+        Java = subprocess.run(['java', '--version'], stdout=subprocess.PIPE)
+    except Exception as e:
+        print("Could not Check java version: ", e)
+    else:
+        try:
+            JOUT = Java.stdout.decode('utf-8')
+            Text = JOUT.split("\n")[0]
+            Text = Text.split(" ")[1]
+            Text = Text.split(".")[0]
+        except Exception as e:
+            print("Could not Check java version: ", e)
+        else:
+            if int(Text) >= 16:
+                print("You have java 16+ you can run minecraft 1.17\n")
+            elif int(Text) < 16:
+                print("You do not have java 16+ you CANNOT run minecraft 1.17\n")
+            else:
+                print("error :/")
+    #NL = JOUT.find('')
+    #print(NL)
 
 # Initial user input
 def InitialUserInput():
@@ -674,6 +698,7 @@ def End():
             pass
 
 UpdateCheck()
+JavaCheck()
 InitialUserInput()
 SetupMode()
 #ForkSelect()
