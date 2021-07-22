@@ -32,6 +32,8 @@ except Exception as e:
 # Detect python version, only runs on 3+
 if (sys.version_info > (3, 0)):
     print("Python 3 has been detected you may continue\n")
+elif (sys.version_info < (3, 10)) and (sys.version_info > (3, 0)):
+    print("Python version is not 3.10! I suggest updating for future features like switch cases (match cases)")
 else:
     exit("Python 2 has been detected please run in Python3!")
 # Set basic vars
@@ -289,13 +291,13 @@ def ServerVersionSelect():
                 tuinity_url = "https://ci.codemc.io/job/Spottedleaf/job/Tuinity/lastSuccessfulBuild/artifact/tuinity-paperclip.jar"
                 paper_url = "https://papermc.io/api/v1/paper/1.17/latest/download" #Fix me later, https://papermc.io/api/v2/projects/paper/versions/1.17 - grab list then find biggest num
                 airplane_url = "https://dl.airplane.gg/latest/Airplane-JDK11/launcher-airplane.jar"
-                purpur_url = "https://purpur.pl3x.net/api/v1/purpur/1.17/latest/download"
+                purpur_url = "https://api.pl3x.net/v2/purpur/1.17.1/latest/download"
                 break
             elif version == 2:
                 tuinity_url = "https://ci.codemc.io/job/Spottedleaf/job/Tuinity/239/artifact/tuinity-paperclip.jar"
                 paper_url = "https://papermc.io/api/v2/projects/paper/versions/1.16.5/builds/778/downloads/paper-1.16.5-778.jar"
                 airplane_url = "https://dl.airplane.gg/f74d161b288cd0f3d372c8bf8454952a5f14bb37/68574788/launcher-airplane.jar"
-                purpur_url = "https://purpur.pl3x.net/api/v1/purpur/1.16.5/latest/download"
+                purpur_url = "https://api.pl3x.net/v2/purpur/1.16.5/latest/download"
                 break
 
 def ProxySelect():
