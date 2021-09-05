@@ -308,7 +308,7 @@ def ProxySelect():
             print("""
             Select which proxy you would like:
 
-            1. Velocity (Reccomended)
+            1. Velocity (Recommended)
             2. Waterfall
             3. Bungeecord
             """)
@@ -537,7 +537,7 @@ def SetViewDistanceAndPort():
         # View Distance
         while True:
             try:
-                view_distance = int(input("\nInput your view_distance in chunks excluding no-tick (reccomended: 4): "))
+                view_distance = int(input("\nInput your view_distance in chunks excluding no-tick (recommended: 4): "))
             # Incorrect input e.g.nfi437y
             except ValueError:
                 print("Please enter a valid number")
